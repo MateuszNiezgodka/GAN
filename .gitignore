@@ -8,3 +8,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Datasets, checkpoints, and generated outputs
+data/
+checkpoints/
+outputs/
+.ipynb_checkpoints/
