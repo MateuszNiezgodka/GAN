@@ -18,6 +18,8 @@ def train_unconditional_gan(
     epochs: int = 25,
     latent_dim: int = 64,
     lr: float = 2e-4,
+    lr_g: float | None = None,
+    lr_d: float | None = None,
     betas: tuple[float, float] = (0.5, 0.999),
     real_label_value: float = 0.9,
     fixed_noise: torch.Tensor | None = None,
@@ -33,7 +35,9 @@ def train_unconditional_gan(
         device: Compute device (cuda / mps / cpu).
         epochs: Number of full passes over the dataset.
         latent_dim: Size of the Gaussian noise vector z.
-        lr: Adam learning rate for both Generator and Discriminator.
+        lr: Default Adam learning rate for both Generator and Discriminator.
+        lr_g: Optional override learning rate for the Generator (TTUR).
+        lr_d: Optional override learning rate for the Discriminator (TTUR).
         betas: Adam beta hyperparameters (0.5, 0.999 is standard for GANs).
         real_label_value: Target for real images in D's loss. Using 0.9 instead
             of 1.0 applies one-sided label smoothing to keep D from overpowering G.
@@ -49,9 +53,12 @@ def train_unconditional_gan(
     generator.to(device)
     discriminator.to(device)
 
+    gen_lr = lr if lr_g is None else lr_g
+    disc_lr = lr if lr_d is None else lr_d
+
     criterion = nn.BCEWithLogitsLoss()
-    opt_g = torch.optim.Adam(generator.parameters(), lr=lr, betas=betas)
-    opt_d = torch.optim.Adam(discriminator.parameters(), lr=lr, betas=betas)
+    opt_g = torch.optim.Adam(generator.parameters(), lr=gen_lr, betas=betas)
+    opt_d = torch.optim.Adam(discriminator.parameters(), lr=disc_lr, betas=betas)
 
     if fixed_noise is None:
         fixed_noise = torch.randn(32, latent_dim, device=device)
